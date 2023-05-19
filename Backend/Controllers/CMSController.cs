@@ -63,13 +63,13 @@ namespace Backend.Controllers
 
         [HttpDelete]
         [Route("DeleteEmployees/{id}")]
-        public IActionResult DeleteEmployee(int id)
+        public async Task<IActionResult> DeleteEmployee(int id)
         {
             try
             {
                 var result = Ok(_service.DeleteEmployee(id));
 
-                if (result == null || (int)result.Value == 0)
+                if (result.Value.ToString() == "0" || result == null)
                     return NotFound();
 
                 return result;

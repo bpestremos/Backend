@@ -18,7 +18,7 @@ namespace Backend.Interface
             _logger = logger;
         }
 
-        public List<Employees> GetEmployees()
+        public IEnumerable<Employees> GetEmployees()
         {
             return _context.Employees.ToList();
         }
@@ -68,12 +68,9 @@ namespace Backend.Interface
 
         public EmployeesDto UpdateEmployee(EmployeesDto employees)
         {
-            var allEmployee = GetEmployees();
-            var employeeById = allEmployee.Find(q => q.Id == employees.Id);
+            var employeeById = GetEmployees().ToList().Find(q => q.Id == employees.Id);
             if (employeeById == null)
-            {
                 return new EmployeesDto();
-            };
 
             employeeById.Address = employees.Address;
             employeeById.City = employees.City;
@@ -90,7 +87,7 @@ namespace Backend.Interface
             employeeById.Country = employees.Country;
             employeeById.DateUpdated = DateTime.Now;
             employeeById.UpdatedBy = "brian";
-
+            
             _context.SaveChanges();
 
             return employees;
@@ -99,8 +96,7 @@ namespace Backend.Interface
 
         public int DeleteEmployee(int id)
         {
-            var allEmployee = GetEmployees();
-            var employeeById = allEmployee.Find(q => q.Id == id);
+            var employeeById = GetEmployees().ToList().Find(q => q.Id == id);
 
             if (employeeById == null)
                 throw new Exception("No record to delete!");
