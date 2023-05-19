@@ -1,8 +1,6 @@
-﻿using System;
+﻿namespace Backend.Extras;
 
-namespace Backend;
-
-public class Extensions
+public class ColumnExtensions
 {
     public string? CreatedBy { get; set; }
     public DateTime? DateCreated { get; set; }

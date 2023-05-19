@@ -1,5 +1,5 @@
+using Backend.Data.DTO;
 using Backend.Interface;
-using Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -8,10 +8,6 @@ namespace Backend.Controllers
     [Route("api/[controller]")]
     public class CMSController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
 
         private readonly ILogger<CMSController> _logger;
         private readonly ICMSService _service;
@@ -20,13 +16,6 @@ namespace Backend.Controllers
         {
             _logger = logger;
             _service = service;
-        }
-
-        [HttpGet]
-        [Route("GetCMS")]
-        public IActionResult GetCMS()
-        {
-            return Ok(_service.GetCMS());
         }
 
         [HttpGet]
@@ -44,10 +33,17 @@ namespace Backend.Controllers
             {
                 return Ok(_service.CreateEmployee(employees));
             }
-            catch (Exception)
+            catch (InvalidOperationException error)
             {
-                return BadRequest();
+                _logger.LogError(error.Message);
+                return BadRequest(error.Message);
             }
+            catch (Exception error)
+            {
+                _logger.LogError(error.Message);
+                return BadRequest(error.Message);
+            }
+
         }
 
         [HttpPut]
@@ -58,8 +54,9 @@ namespace Backend.Controllers
             {
                 return Ok(_service.UpdateEmployee(employees));
             }
-            catch (Exception)
+            catch (Exception error)
             {
+                _logger.LogError(error.Message);
                 return BadRequest();
             }
         }
@@ -77,9 +74,10 @@ namespace Backend.Controllers
 
                 return result;
             }
-            catch (Exception)
+            catch (Exception error)
             {
-                return BadRequest();
+                _logger.LogError(error.Message);
+                return BadRequest(error.Message);
             }
         }
     }

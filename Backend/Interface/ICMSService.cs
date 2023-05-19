@@ -1,12 +1,13 @@
-﻿using Backend.Models;
+﻿using Backend.Data.DTO;
+using Backend.Data.Tables;
+using static Backend.Extras.Validations;
 
 namespace Backend.Interface
 {
     public interface ICMSService
     {
-        List<string> GetCMS();
         List<Employees> GetEmployees();
-        EmployeesDto CreateEmployee(EmployeesDto employees);
+        ReturnList CreateEmployee(EmployeesDto employees);
         EmployeesDto UpdateEmployee(EmployeesDto employees);
         int DeleteEmployee(int id);
     }

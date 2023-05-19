@@ -1,39 +1,35 @@
-﻿using Backend.Models;
-using Backend.Data;
-using Microsoft.AspNetCore.Server.IIS.Core;
+﻿using Backend.Data;
+using Backend.Extras;
+using Microsoft.Identity.Client;
+using System.Text;
+using Backend.Data.Tables;
+using Backend.Data.DTO;
 
 namespace Backend.Interface
 {
-    public class CMSService : ICMSService
+    public class CMSService : Validations, ICMSService
     {
         private readonly CMSDbContext _context;
-        public CMSService(CMSDbContext context)
+        private Validations _validations;
+        private readonly ILogger<CMSService> _logger;
+        public CMSService(CMSDbContext context, ILogger<CMSService> logger)
         {
             _context = context;
+            _logger = logger;
         }
-
-        public List<string> GetCMS()
-        {
-            var rng = new List<string>();
-            for (int i = 1; i <= 10; i++)
-            {
-                rng.Add(i.ToString());
-            }
-
-            return rng;
-        }
-
 
         public List<Employees> GetEmployees()
         {
             return _context.Employees.ToList();
         }
 
-        public EmployeesDto CreateEmployee(EmployeesDto employees)
+        public ReturnList CreateEmployee(EmployeesDto employees)
         {
+            var returnList = new ReturnList();
             if (employees == null)
             {
-                return new EmployeesDto();
+                returnList.messages.Add("No data to process.");
+                return returnList;
             };
 
             var newEmployee = new Employees
@@ -41,22 +37,32 @@ namespace Backend.Interface
                 EmployeeId = employees.EmployeeId,
                 Address = employees.Address,
                 City = employees.City,
-                Country = employees.Country,
                 Description = employees.Description,
                 Email = employees.Email,
-                Name = employees.Name,
+                FirstName = employees.FirstName,
+                LastName = employees.LastName,
+                MiddleName = employees.MiddleName,
                 Phone = employees.Phone,
                 PhoneNumber = employees.PhoneNumber,
                 PostalCode = employees.PostalCode,
                 Region = employees.Region,
+                Province = employees.Province,
+                Country = employees.Country,
                 CreatedBy = "brian",
                 DateCreated = DateTime.Now,
             };
 
+            var list = _validations.ValidateEmployee(newEmployee);
+
+            if (list.messages.Count > 0)
+            {
+                throw new Exception(list.ErrorMessage);
+            }
+
             _context.Employees.Add(newEmployee);
             _context.SaveChanges();
 
-            return employees;
+            return list;
 
         }
 
@@ -71,14 +77,17 @@ namespace Backend.Interface
 
             employeeById.Address = employees.Address;
             employeeById.City = employees.City;
-            employeeById.Country = employees.Country;
             employeeById.Description = employees.Description;
             employeeById.Email = employees.Email;
-            employeeById.Name = employees.Name;
+            employeeById.FirstName = employees.FirstName;
+            employeeById.LastName = employees.LastName;
+            employeeById.MiddleName = employees.MiddleName;
             employeeById.Phone = employees.Phone;
             employeeById.PhoneNumber = employees.PhoneNumber;
             employeeById.PostalCode = employees.PostalCode;
             employeeById.Region = employees.Region;
+            employeeById.Province = employees.Province;
+            employeeById.Country = employees.Country;
             employeeById.DateUpdated = DateTime.Now;
             employeeById.UpdatedBy = "brian";
 
@@ -90,15 +99,14 @@ namespace Backend.Interface
 
         public int DeleteEmployee(int id)
         {
+            var allEmployee = GetEmployees();
+            var employeeById = allEmployee.Find(q => q.Id == id);
+
+            if (employeeById == null)
+                throw new Exception("No record to delete!");
+
             try
             {
-                var allEmployee = GetEmployees();
-                var employeeById = allEmployee.Find(q => q.Id == id);
-
-                if (employeeById == null)
-                    return 0;
-
-
                 employeeById.IsDeleted = true;
                 employeeById.DeletedBy = "brian";
                 employeeById.DateDeleted = DateTime.Now;
